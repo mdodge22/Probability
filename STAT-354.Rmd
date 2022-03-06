@@ -1,0 +1,116 @@
+---
+title: "Probability Visualization"
+author: "Max Dodge"
+date: "11/12/2021"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+```{r}
+library(ggplot2)
+library(tidyr)
+```
+
+
+```{r}
+n = 162
+
+b <- 1:n
+
+a <- 0:(n-1)
+
+b_prob <- dbinom(b, n, .55)
+
+a_prob <- dbinom(a, n, .6)
+
+c = 0
+
+for (i in 0:n)
+  c = c + sum(b_prob[i]*a_prob[0:i])
+
+print(c)
+```
+
+```{r}
+p_winb = c()
+
+for (j in 1:200) {
+
+  n = j
+
+  b <- 1:n
+
+  a <- 0:(n-1)
+
+  b_prob <- dbinom(b, n, .55)
+
+  a_prob <- dbinom(a, n, .6)
+
+  p = 0
+
+  for (i in 0:n) {
+    p =  p + sum(b_prob[i]*a_prob[0:i])
+  }
+  
+  p_winb[j] = p
+
+}
+```
+
+```{r}
+p_wina = c()
+
+for (j in 1:200) {
+
+  n = j
+
+  b <- 0:(n-1)
+
+  a <- 1:n
+
+  b_prob <- dbinom(b, n, .55)
+
+  a_prob <- dbinom(a, n, .6)
+
+  p = 0
+
+  for (i in 0:n) {
+    p =  p + sum(b_prob[0:i]*a_prob[i])
+  }
+  
+  p_wina[j] = p
+  
+}
+```
+
+```{r}
+p_tie = c()
+
+for (i in 0:200) {
+
+  p_tie[i] = 1 - p_wina[i] - p_winb[i]
+
+}
+```
+
+```{r}
+win_percentages = data.frame(
+  Games = c(1:200),
+  A_wins = p_wina,
+  B_wins = p_winb,
+  Tie = p_tie
+)
+
+win_percentages <- win_percentages %>% 
+  pivot_longer(!Games, names_to = "Winner", values_to = "Probability")
+
+win_percentages %>%
+  ggplot(mapping = aes(x = Games, y = Probability, color = Winner))  +
+  geom_line()
+
+
+```
+
