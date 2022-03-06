@@ -1,0 +1,149 @@
+---
+title: "STAT-354-Monte-Carlo"
+author: "Max Dodge"
+date: "11/12/2021"
+output: html_document
+---
+
+## Monte Carlo Lab
+
+```{r}
+library(ggplot2)
+library(tidyr)
+```
+
+
+```{r}
+Flips_Needed = function( Target ) {
+  
+  NumFlips = 3
+  
+  Flips = sample(c("H","T") , size=3 , replace=TRUE )
+  
+  
+  while(Flips[1] != Target[1]|Flips[2] != Target[2] | Flips[3] != Target[3]) { 
+    Flips[1] = Flips[2]
+    Flips[2] = Flips[3] 
+    Flips[3] = sample(c("H","T") , size=1 , replace=TRUE )
+    NumFlips = NumFlips + 1
+    }
+
+  return(NumFlips)}
+```
+
+
+```{r}
+HHH = c() 
+
+for(i in 1:10000) {
+  HHH = c( HHH, Flips_Needed(Target=c("H","H","H")) )} 
+
+HHH_mean = mean(HHH)
+HHH_median = median(HHH)
+
+HTH = c()
+
+for(i in 1:10000) {
+  HTH = c(HTH, Flips_Needed(Target=c("H","T","H")) )} 
+
+HTH_mean = mean(HTH)
+HTH_median = median(HTH)
+
+HHT = c()
+
+for(i in 1:10000) {
+  HHT = c(HHT, Flips_Needed(Target=c("H","H","T")) )} 
+
+HHT_mean = mean(HHT)
+HHT_median = median(HHT)
+```
+
+```{r}
+flips_required = data.frame(
+  HHT_Flips = HHT,
+  HHH_Flips = HHH,
+  HTH_Flips = HTH
+)
+```
+
+```{r}
+flips_required %>%
+  ggplot(mapping = aes(x = HHT)) +
+  geom_histogram()
+```
+
+```{r}
+flips_required %>%
+  ggplot(mapping = aes(x = HHH)) +
+  geom_histogram()
+```
+
+```{r}
+flips_required %>%
+  ggplot(mapping = aes(x = HTH)) +
+  geom_histogram()
+```
+
+
+The differences in flips is due to the flips needed to "start over." If you get a tails on when you are looking for HHH you have to wait at least three more flips to that tails to leave the three most recent flips. For HTH if you get two tails in a row you also have to wait three flips to start over. For HHT if the last flip was a heads instead of the needed tails it would still be one flip away from winning and would not need to start over.
+
+```{r}
+TripletsGame = function( Target1 , Target2 ){
+  
+  Flips = sample(c("H","T") , size=3 , replace=TRUE)
+  while((Flips[1] != Target1[1]|Flips[2] != Target1[2]|Flips[3] != Target1[3]) && 
+        (Flips[1] != Target2[1]|Flips[2] != Target2[2]| Flips[3] != Target2[3])) {
+    Flips[1] = Flips[2]
+    Flips[2] = Flips[3]
+    Flips[3] = sample(c("H","T") , size=1 , replace=TRUE )
+  }
+  if( all( Target1==Flips ) ){ Winner = "Target 1" } else { Winner = "Target 2" }
+  return(Winner) 
+}
+```
+
+```{r}
+Winner1 = c()
+
+for(i in 1:10000 ) { Winner1 = c(Winner1, TripletsGame(Target1=c("T","T","H"),
+Target2=c("H","T","T")))}
+
+table(Winner1)/10000
+```
+
+```{r}
+Winner2 = c()
+
+for(i in 1:10000 ) { Winner2 = c(Winner2, TripletsGame(Target1=c("H","T","T"),
+Target2=c("H","H","T")))}
+
+table(Winner2)/10000
+```
+
+```{r}
+Winner3 = c()
+
+for(i in 1:10000 ) { Winner3 = c(Winner3, TripletsGame(Target1=c("H","H","T"),
+Target2=c("T","H","H")))}
+
+table(Winner3)/10000
+```
+
+```{r}
+Winner4 = c()
+
+for(i in 1:10000 ) { Winner4 = c(Winner4, TripletsGame(Target1=c("T","H","H"),
+Target2=c("T","T","H")))}
+
+table(Winner4)/10000
+```
+
+Having repetition in the first two flips is better than in the last two. If you have to get two heads in the first two tosses, if a tails comes up it takes less flips to "restart."
+
+
+
+
+
+
+
+
